@@ -2,13 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-char sub_tab[] = "c 5 6 b 9 0 a d 3 e f 8 4 7 1 2";
+char sub_tab[] = "C56B90AD3EF84712";
 
 int per_tab[24] = {0, 6, 12, 18, 1, 7, 13, 19, 2, 8, 14, 20,
                    3, 9, 15, 21, 4, 10, 16, 22, 5, 11, 17, 23};
-
-//int hexConstant[] = {0, 1, 10, 11, 100, 101, 110, 111, 1000,
-//                     1001, 1010, 1011, 1100, 1101, 1110, 1111};
 
 int padding(char *key_bi)
 {
@@ -18,6 +15,48 @@ int padding(char *key_bi)
         strcat(key_bi, "0");
     }
 
+    return 0;
+}
+
+int empty(char *state)
+{
+    for (int i = 0; i < strlen(state); i++)
+    {
+        strcpy(&state[i], "");
+    }
+    return 0;
+}
+
+int dec_to_bi(int num, int *num_bi)
+{
+    int i = 0;
+    int j = 0;
+    int *tmp = malloc(5 * sizeof(int));
+    num_bi[0] = 0;
+    for (i = 4; num > 0; i--)
+    {
+        tmp[i] = num % 2;
+        //printf("tmp %d\n", tmp[i]);
+
+        num = num / 2;
+    }
+    
+    for (j = 0; j < 5; j ++)
+    {
+        if (tmp[j]){
+           num_bi[j] = tmp[j]; 
+          
+        }
+        else {
+            num_bi[j] = 0;
+        }
+        
+    }
+    for (int w = 0; w < 5; w ++){
+        //printf("bin %d\n", num_bi[w]);
+        
+    }
+    //printf("bin %ls\n", num_bi);
     return 0;
 }
 
@@ -141,15 +180,15 @@ int bi_to_hex(char *bi, char *hex)
 
                 case 15:
                     strcat(hex, "F");
-                    fprintf(stdout, "hex: %s\n", hex);
                     break;
-                default: 
+                default:
                     fprintf(stderr, "Unknown value.\n");
                     break;
                 }
                 break;
             }
-            else {
+            else
+            {
                 sprintf(wS, "%d", w);
                 strncat(hex, wS, 1);
                 break;
@@ -190,97 +229,176 @@ int pivot(char *key_bi, int n)
 }
 
 char * xor (char *state, char *ki) {
-    int stateI = atoi(state);
+    int *stateI = malloc(25 * sizeof(int));
+    int *kiI = malloc(25 * sizeof(int));
+    for (int i = 0; i < strlen(state); i++)
+    {
+        stateI[i] = atoi(&state[i]);
+    }
+
     fprintf(stdout, "state xor : %s\n", state);
     fprintf(stdout, "ki xor : %s\n", ki);
 
-    int kiI = atoi(ki);
+    fprintf(stdout, "stateI xor : %ls\n", stateI);
+    fprintf(stdout, "kiI xor : %ls\n", kiI);
 
-    fprintf(stdout, "stateI xor : %d\n", stateI);
-    fprintf(stdout, "kiI xor : %d\n", kiI);
+    for (int i = 0; i < strlen(state); i++)
+    {
+        stateI[i] = stateI[i] ^ kiI[i];
+    }
 
-    stateI = stateI ^ kiI;
-
-    sprintf(state, "%d", stateI);
+    sprintf(state, "%ls", stateI);
     fprintf(stdout, "post xor : %s\n", state);
     return state;
 }
 
-    int substitution(char *state, int nb)
-{ //PBM SUB
-    char hex[80];
-    int i;
-    int j = 0;
-
-    bi_to_hex(state, hex);
-
-    printf("key hex : %s --> %ld\n", hex, strlen(hex));
-    i = 0;
-    while (hex[i] != '\0')
-    {
-        for (int j = 0; j < 11; j++)
-        {
-            if (j == hex[i])
-            {
-                hex[i] = sub_tab[j];
-            }
-            else if (strcmp(&hex[i], "A") == 0)
-            {
-                strcpy(&hex[i], &sub_tab[11]);
-            }
-            else if (strcmp(&hex[i], "B") == 0)
-            {
-                strcpy(&hex[i], &sub_tab[12]);
-            }
-            else if (strcmp(&hex[i], "C") == 0)
-            {
-                strcpy(&hex[i], &sub_tab[13]);
-            }
-            else if (strcmp(&hex[i], "D") == 0)
-            {
-                strcpy(&hex[i], &sub_tab[14]);
-            }
-            else if (strcmp(&hex[i], "E") == 0)
-            {
-                strcpy(&hex[i], &sub_tab[15]);
-            }
-            else if (strcmp(&hex[i], "F") == 0)
-            {
-                strcpy(&hex[i], &sub_tab[16]);
-            }
-        }
-    }
-
-    hex_to_bi(hex, state);
-    fprintf(stdout, "post sub: %s\n", state);
-    return 0;
-}
-
 int key_xor(char *key_bi, int I)
-{ //PBM XOR
+{ 
+    fprintf(stdout, "key : %s --> tour : %d\n", key_bi, I);
     char to_xor[5] = "";
     int w = 0;
     for (int x = 61; x < 66; x++)
     {
-        strcpy(&to_xor[w], &key_bi[x]);
+        strncpy(&to_xor[w], &key_bi[x], 1);
         w++;
     }
-    fprintf(stdout, "to_xor : %ld\n", strlen(to_xor));
+    int *I_bi = malloc(5 * sizeof(int));
+    dec_to_bi(I, I_bi);
+    fprintf(stdout, "to_xor : %s --> tour bi: %ls\n", to_xor, I_bi);
 
-    char *tmp;
-    char *char_I;
-    char It[25] = "0";
-    sprintf(char_I, "%d", I);
-    hex_to_bi(char_I, tmp);
-    strcat(It, tmp);
-    strcpy(to_xor, xor(to_xor, It));
-
-    int y;
+    for (int i = 0; i < 5; i++)
+    {
+        to_xor[i] = to_xor[i] ^ I_bi[i];
+    }
+    fprintf(stdout, "res xor : %s --> tour bi: %d\n", to_xor, I);
+    w = 0;
     for (int x = 61; x < 66; x++)
     {
-        y = x % 61;
-        strcpy(&key_bi[x], &to_xor[y]);
+        strncpy(&key_bi[x], &to_xor[w], 1);
+        w++;
     }
+
+    return 0;
+}
+
+int mess_xor(char *state, char *ki){
+    int *stateI = malloc(25 * sizeof(int));
+    int *kiI = malloc(25 * sizeof(int));
+    for (int i = 0; i < strlen(state); i++)
+    {
+        kiI[i] = atoi(&ki[i]);
+        stateI[i] = atoi(&state[i]);
+    }
+    fprintf(stdout, "mess to xor : %ls\n", stateI);
+    fprintf(stdout, "ki xor : %ls\n", kiI);
+
+    for (int i = 0; i < strlen(state); i++)
+    {
+        stateI[i] = stateI[i] ^ kiI[i];
+    }
+    
+    for (int i = 0; i < strlen(state); i++)
+    {
+        char * tmp = malloc(sizeof(char));
+        sprintf(tmp, "%d", stateI[i]);
+        strncpy(&state[i], tmp, 1);
+        free(tmp);
+    }
+    fprintf(stdout, "res xor mess: %s\n", state);
+
+}
+
+int substitution(char *state, int nb)
+{
+    char *sub_hex = malloc(80 * sizeof(char));
+    int i = 0;
+    bi_to_hex(state, sub_hex);
+
+    printf("hex : %s --> %ld\n", sub_hex, strlen(sub_hex));
+    int value;
+    while (i < 20)
+    {
+        //fprintf(stdout, "hex i: %c \n", sub_hex[i]);
+
+        switch (sub_hex[i])
+        {
+        case '0':
+            strncpy(&sub_hex[i], &sub_tab[0], 1);
+            i++;
+            break;
+        case '1':
+            strncpy(&sub_hex[i], &sub_tab[1], 1);
+            i++;
+            break;
+        case '2':
+            strncpy(&sub_hex[i], &sub_tab[2], 1);
+            i++;
+            break;
+        case '3':
+            strncpy(&sub_hex[i], &sub_tab[3], 1);
+            i++;
+            break;
+        case '4':
+            strncpy(&sub_hex[i], &sub_tab[4], 1);
+            i++;
+            break;
+        case '5':
+            strncpy(&sub_hex[i], &sub_tab[5], 1);
+            i++;
+            break;
+        case '6':
+            strncpy(&sub_hex[i], &sub_tab[6], 1);
+            i++;
+            break;
+        case '7':
+            strncpy(&sub_hex[i], &sub_tab[7], 1);
+            i++;
+            break;
+        case '8':
+            strncpy(&sub_hex[i], &sub_tab[8], 1);
+            i++;
+            break;
+        case '9':
+            strncpy(&sub_hex[i], &sub_tab[9], 1);
+            i++;
+            break;
+        case 'A':
+            strncpy(&sub_hex[i], &sub_tab[10], 1);
+            i++;
+            break;
+        case 'B':
+            strncpy(&sub_hex[i], &sub_tab[11], 1);
+            i++;
+            break;
+        case 'C':
+            strncpy(&sub_hex[i], &sub_tab[12], 1);
+            i++;
+            break;
+        case 'D':
+            strncpy(&sub_hex[i], &sub_tab[13], 1);
+            i++;
+            break;
+        case 'E':
+            strncpy(&sub_hex[i], &sub_tab[14], 1);
+            i++;
+            break;
+        case 'F':
+            strncpy(&sub_hex[i], &sub_tab[15], 1);
+            i++;
+            break;
+        default:
+            fprintf(stderr, "Unkown value.\n");
+        }
+    }
+
+    printf("to go : %s --> %ld\n", sub_hex, strlen(sub_hex));
+
+    empty(state);
+    hex_to_bi(sub_hex, state);
+    //fprintf(stdout, "state post sub: %s--> %ld\n", state, strlen(state));
+
+    free(sub_hex);
+    return 0;
 }
 
 /*char * permutation(char *state){
@@ -320,9 +438,9 @@ int key_schedule(char *key_bi, char *ki, int I)
 
     //PBM
     substitution(key_bi, 4); //substitution des 4 premiers bits
-    fprintf(stdout, "K sub: %s\n", key_bi);
+    fprintf(stdout, "K sub: %s --> %ld\n", key_bi, strlen(key_bi));
 
-    //key_xor(key_bi, I);                     //XOR avec le nombre de tour
+    key_xor(key_bi, I); //XOR avec le nombre de tour
 
     fprintf(stdout, "K : %s\n", key_bi);
     return 0;
@@ -335,11 +453,13 @@ char *chiffrement(char *state_bi, char *key_bi)
 
     //for (int i = 1; i < 11; i ++){
 
-    key_schedule(key_bi, ki, i); // algo de cadencement de clé
+    key_schedule(key_bi, ki, i); //algo de cadencement de clé
+    printf("CHIFFREMENT\n");
+    mess_xor(state_bi, ki);//XOR
+    printf("state: %s\n", state_bi);
 
-    //strcpy(state, xor(state, key));//XOR
-    //substitution(state, strlen(state));//substitution
-    //permutation(state);//permutation
+    //substitution(state_bi, strlen(state_bi));//substitution
+    //permutation(state_bi);//permutation
     //}
     //strcpy(state, xor(state, key));//XOR
 
