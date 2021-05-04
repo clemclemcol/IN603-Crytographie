@@ -508,8 +508,7 @@ char * permutation(char *state){
     for (i = 0; i < 24; i ++){
         for (j = 0; j < 24; j++){
             if (i == per_tab[j]){
-                int x = atoi(index(*per_tab, i));
-                strncpy(&tmp[x],&state[i], 1);
+                strncpy(&tmp[j],&state[i], 1);
             }
         }
     }
@@ -527,7 +526,7 @@ char * permutation(char *state){
 // CHANGEMENTS FAITS
 void key_schedule(char *key_bi, int I, char * ki)//algorithme cadencement de clé
 { 
-    fprintf(stdout,"\nCADENCEMENT\n");
+    
     //fprintf(stdout, "ki: %s ---> %ld \n", ki, strlen(ki));
     //fprintf(stdout, "K : %s --> %ld\n", key_bi, strlen(key_bi));
     key_bi = pivot(key_bi); // décalage des bits de la clé maître
@@ -545,36 +544,39 @@ void key_schedule(char *key_bi, int I, char * ki)//algorithme cadencement de cl�
 char *dechiffrement(char *state_bi, char *key_bi)
 {
     int i = 1;
-    char **ki = malloc(11 * sizeof(char*)); 
+    char **ki = malloc(12 * sizeof(char*)); 
     if (ki == NULL){
         fprintf(stderr, "ERR malloc.\n");
         exit(2);
     }
-    
+    fprintf(stdout,"\nCADENCEMENT\n");
     for (i = 1; i < 11; i++){
+        
         get_ki(key_bi, ki[i]);
+        printf("coucou\n");
         fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s ---> %ld //%ld\n",i, state_bi, i, ki[i], strlen(state_bi), strlen(ki[i]));
         key_schedule(key_bi, i, *ki); //algo de cadencement de clé
     }
     state_bi = mess_xor(state_bi, ki[11]);//XOR
    
-    for (i = 11; i > 0 ; i ++){
+    for (i = 11; i > 0 ; i --){
+        fprintf(stdout,"\nDECHIFFREMENT\n");
         char * keyhex = malloc(24*sizeof(char));
         char * messhex = malloc(24*sizeof(char));
 
         state_bi = permutation(state_bi);//permutation
-        //fprintf(stdout, "state post perm: %s\n", state_bi);
+        fprintf(stdout, "state post perm: %s\n", state_bi);
 
         state_bi = mess_substitution(state_bi, strlen(state_bi));//substitution
-        //fprintf(stdout, "state post sub: %s\n", state_bi);
+        fprintf(stdout, "state post sub: %s\n", state_bi);
 
         fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s ---> %ld //%ld\n",i, messhex, i, keyhex, strlen(state_bi), strlen(ki[i]));
        
-        fprintf(stdout,"\nCHIFFREMENT\n");
-        //fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s ---> %ld //%ld\n",i, state_bi, i, ki, strlen(state_bi), strlen(ki));
+        
+        fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s ---> %ld //%ld\n",i, state_bi, i, ki[i], strlen(state_bi), strlen(ki[i]));
         
         state_bi = mess_xor(state_bi, ki[i]);//XOR
-        //fprintf(stdout, "state post xor: %s\n", state_bi);
+        fprintf(stdout, "state post xor: %s\n", state_bi);
         
         //free(messhex); --> PBM 
         //free(keyhex); --> PBM
