@@ -22,9 +22,8 @@ int main(int argc, char *argv[])
     }
     strcpy(c1, argv[2]);
 
-    KEYLIST * tab1;
-    KEYLIST * tab2;
-    attaque(16, tab1, tab2, m1, c1); //16777215
+    KEYLIST *key_tab;
+    attaque(1677, key_tab, m1, c1); //16777215
     
     free(m1);
     free(c1);
