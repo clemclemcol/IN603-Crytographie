@@ -19,22 +19,22 @@ int d_get_ki(char *key_bi, char **ki, int T)
         sprintf(tmp, "%c", key_bi[i]);
         strcat(ki[T], tmp);
         strcpy(tmp, "");
+        
     }
-    free(tmp);
+    //printf("ki %d %s\n", T, ki[T]);
+    //free(tmp);
     return 0;
 }
 
 char *d_key_substitution(char *state, int nb)
 {
-   char *sub_hex = malloc(80 * sizeof(char));
+    char *sub_hex = malloc(80 * sizeof(char));
     int i = 0;
     bi_to_hex(state, sub_hex);
 
-    //printf("hex : %s --> %ld\n", sub_hex, strlen(sub_hex));
     int value;
     for (int i = 0; i < 1; i++)
     {
-        //fprintf(stdout, "hex i: %c \n", sub_hex[i]);
         switch (sub_hex[i])
         {
         case '0':
@@ -96,7 +96,7 @@ char *d_key_substitution(char *state, int nb)
         }
     }
     empty(state);
-    
+
     hex_to_bi(sub_hex, state);
     return state;
 }
@@ -112,7 +112,7 @@ char *d_mess_substitution(char *state, int nb)
     int value;
     while (sub_hex[i] != '\0')
     {
-        sprintf(tmp, "%c", sub_hex[i]);        
+        sprintf(tmp, "%c", sub_hex[i]);
         switch (*tmp)
         {
         case '0':
@@ -191,7 +191,7 @@ char *d_mess_substitution(char *state, int nb)
     }
     strcpy(tmp, "");
     empty(state);
-    
+
     hex_to_bi(sub_h, state);
     free(sub_h);
     return state;
@@ -221,27 +221,35 @@ char *d_permutation(char *state)
     {
         strncpy(&state[i], &tmp[i], 1);
     }
-    
+
     free(tmp);
     return state;
 }
 
-void d_key_schedule(char *key_bi, int I) 
+void d_key_schedule(char *key_bi, int I)
 {
-    key_bi = pivot(key_bi); 
+    key_bi = pivot(key_bi);
 
-    key_bi = d_key_substitution(key_bi, 4); 
-    
-    key_bi = key_xor(key_bi, I); 
+    key_bi = d_key_substitution(key_bi, 4);
+
+    key_bi = key_xor(key_bi, I);
+
+
 }
 
 char *dechiffrement(char *state_bi, char *key_bi)
 {
+    //printf("state_bi at start dechiffrement: %s\n", state_bi);
 
-    char **ki = malloc(12 * sizeof(char *));
-    for (int a = 0; a < 12; a++)
+    //printf("mess before mess-xor %s\n",state_bi);
+    //fprintf(stdout, "%s %ld //%ld\n", state_bi, strlen(state_bi), strlen(key_bi));
+    //char **ki = malloc(12* sizeof(*ki+1));
+    char **ki = malloc(12* sizeof(char*) +1);
+
+    for (int a = 0; a <= 12; a++)
     {
-        ki[a] = malloc(25 * sizeof(char));
+        //ki[a] = malloc(24* sizeof(**ki+1));
+        ki[a] = malloc(24* sizeof(char)+1);
     }
     if (ki == NULL)
     {
@@ -249,42 +257,49 @@ char *dechiffrement(char *state_bi, char *key_bi)
         exit(2);
     }
     int i = 1;
+            //printf("state_bi at middle0 dechiffrement: %s\n", state_bi);
+
     for (i = 1; i < 12; i++)
     {
         d_get_ki(key_bi, ki, i);
+        
+        d_key_schedule(key_bi, i);
+    }
+    //printf("state_bi at middle1 dechiffrement: %s\n", state_bi);
 
-        d_key_schedule(key_bi, i); 
+    char *keyhex = malloc(24 * sizeof(char));
+    char *messhex = malloc(24 * sizeof(char));
+    if (strlen(messhex) != 0 || strlen(keyhex) != 0)
+    {
+        strcpy(messhex, "");
+        strcpy(keyhex, "");
     }
 
-    fprintf(stdout, "\nDECHIFFREMENT\n");
-    state_bi = mess_xor(state_bi, ki[11]); 
-    fprintf(stdout, "[ TOUR 11 ] state : %s --> ki 11: %s \n", state_bi, ki[11]);
-    
+    state_bi = mess_xor(state_bi, ki[11]);
+    //printf("ki 11 %s\n",ki[11]);
+    bi_to_hex(state_bi, messhex);
+    bi_to_hex(ki[11], keyhex);
+    fprintf(stdout, "[ TOUR 11 ] state : %s --> ki 11: %s \n", messhex, keyhex);
+
     for (i = 10; i > 0; i--)
     {
-        char *keyhex = malloc(24 * sizeof(char));
-        char *messhex = malloc(24 * sizeof(char));
         if (strlen(messhex) != 0 || strlen(keyhex) != 0)
         {
             strcpy(messhex, "");
             strcpy(keyhex, "");
         }
-        state_bi = d_permutation(state_bi); 
-        //fprintf(stdout, "state post perm: %s\n", state_bi);
+        state_bi = d_permutation(state_bi);
 
-        state_bi = d_mess_substitution(state_bi, strlen(state_bi)); 
-        //fprintf(stdout, "state post sub: %s\n", state_bi);
-       
-        state_bi = mess_xor(state_bi, ki[i]); 
-        //fprintf(stdout, "state post xor: %s\n", state_bi);
-        bi_to_hex(state_bi, messhex); 
-        //fprintf(stdout, "state post xor: %s\n", messhex);
-        fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s ---> %ld //%ld\n", i, state_bi, i, ki[i], strlen(state_bi), strlen(ki[i]));
-       
+        state_bi = d_mess_substitution(state_bi, strlen(state_bi));
 
-        free(messhex);
-        free(keyhex);
+        state_bi = mess_xor(state_bi, ki[i]);
+
+        bi_to_hex(state_bi, messhex);
+        bi_to_hex(ki[i], keyhex);
+
+        fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s \n", i, messhex, i, keyhex);
     }
+    free(messhex);
+    free(keyhex);
     return state_bi;
 }
-
