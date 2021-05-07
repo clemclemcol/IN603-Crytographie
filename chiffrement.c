@@ -20,14 +20,16 @@ int c_get_ki(char *key_bi, char *ki)
 
 char * c_key_substitution(char *state, int nb){
     char *sub_hex = malloc(80 * sizeof(char));
+    if (strlen(sub_hex)!=0){
+        strcpy(sub_hex, "");
+    }
     int i = 0;
     bi_to_hex(state, sub_hex);
+    printf("key sub %s\n",state);
 
-    //printf("hex : %s --> %ld\n", sub_hex, strlen(sub_hex));
     int value;
     for (int i = 0; i < 1; i++)
     {
-        //fprintf(stdout, "hex i: %c \n", sub_hex[i]);
         switch (sub_hex[i])
         {
         case '0':
@@ -85,7 +87,7 @@ char * c_key_substitution(char *state, int nb){
             strncpy(&sub_hex[i], &c_sub_tab[15], 1);
             break;
         default:
-            fprintf(stderr, "Unkown value.\n");
+            fprintf(stderr, "Unkown value key_sub %s.\n", &sub_hex[i]);
         }
     }
     empty(state);
@@ -99,6 +101,9 @@ char * c_key_substitution(char *state, int nb){
 char* c_mess_substitution(char *state, int nb)
 {
     char *sub_hex = malloc(80 * sizeof(char));
+    if (strlen(sub_hex)!=0){
+        strcpy(sub_hex, "");
+    }
     int i = 0;
     bi_to_hex(state, sub_hex);
 
@@ -177,7 +182,7 @@ char* c_mess_substitution(char *state, int nb)
             i++;
             break;
         default:
-            fprintf(stderr, "Unkown value.\n");
+            fprintf(stderr, "Unkown value mess_sub.\n");
         }
     }
 
@@ -202,21 +207,20 @@ char * c_permutation(char *state){
             }
         }
     }
-    //printf("tmp : %s\n", tmp);
     empty(state);
     for(i = 0; i < 24; i ++){
         strncpy(&state[i], &tmp[i], 1);
     }
-    //printf("post perm: %s\n", state);
     free(tmp);
     return state;
 }
 
 void c_key_schedule(char *key_bi, int I)
 { 
-
+    //printf("kb: %s\n", key_bi);
+    
     key_bi = pivot(key_bi); 
-
+    //printf("kb piv: %s\n", key_bi);
     key_bi = c_key_substitution(key_bi, 4); 
     
     key_bi = key_xor(key_bi, I); 
@@ -227,9 +231,9 @@ char *chiffrement(char *state_bi, char *key_bi)
 {
     int i ;
     for (i = 1; i < 11; i ++){
-        char *ki = malloc(24 * sizeof(char)); 
-        char * keyhex = malloc(24*sizeof(char));
-        char * messhex = malloc(24*sizeof(char));
+        char *ki = malloc(24* sizeof(char)); 
+        char * keyhex = malloc(24* sizeof(char));
+        char * messhex = malloc(24* sizeof(char));
 
         if (ki == NULL){
             fprintf(stderr, "ERR malloc.\n");
@@ -243,7 +247,7 @@ char *chiffrement(char *state_bi, char *key_bi)
 
         bi_to_hex(ki, keyhex);
         bi_to_hex(state_bi, messhex);
-        fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s \n",i, messhex, i, ki);
+        //fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s \n",i, messhex, i, keyhex);
         c_key_schedule(key_bi, i); 
        
         state_bi = mess_xor(state_bi, ki);
@@ -269,7 +273,7 @@ char *chiffrement(char *state_bi, char *key_bi)
     state_bi = mess_xor(state_bi, ki);
     bi_to_hex(state_bi, messhexf);
     bi_to_hex(ki, kihexf);
-    fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s \n",i, messhexf, i, kihexf);
+    //fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s \n",i, messhexf, i, kihexf);
 
     free(ki);
     free(messhexf);
