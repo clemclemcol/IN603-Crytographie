@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     }
     strcpy(key, argv[2]);
     char *key_bi = malloc(80*sizeof(char));
-
+    printf("Message clair : %s \n", mess);
     hex_to_bi(mess, mess_bi); // message en binaire
     hex_to_bi(key, key_bi); // clé en binaire
     if (strlen(key_bi) < 80)
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     empty(mess);
     bi_to_hex(mess_bi, mess);
     
-    printf("Message chiffré: %s --> %ld \n", mess, strlen(mess_bi));
+    printf("Message chiffré: %s \n", mess);
 
     free(mess);
     free(mess_bi);
