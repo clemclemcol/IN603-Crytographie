@@ -3,8 +3,7 @@
  typedef struct keylist
 {
     char *key;
-    char *resCh;
-    char *resDch;
+    char *res;
 
     struct keylist *suiv;
 
@@ -20,4 +19,4 @@ KEYLIST* key_generator(int size, KEYLIST *key_tab);
 
 void comparison_tabs(KEYLIST *tab);
 
-void attaque(int size, KEYLIST *key_tab, char *m1, char *c1);
+void attaque(int size, KEYLIST *key_tab_m1, KEYLIST *key_tab_c1, char *m1, char *c1);
