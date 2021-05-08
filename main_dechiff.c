@@ -23,16 +23,15 @@ int main(int argc, char *argv[])
     }
     strcpy(key, argv[2]);
     char key_bi[80] = "";
-
-    hex_to_bi(mess, mess_bi); 
+    hex_to_bi(key, key_bi);    //converti la clé héxadécimale en binaire 
+    hex_to_bi(mess, mess_bi); //converti le message héxadécimale en binaire
     printf("Message chiffré : %s \n", mess);
-    hex_to_bi(key, key_bi); 
     if (strlen(key_bi) < 80)
     {
-        padding(key_bi); 
+        padding(key_bi);  // ajout des 0 en bits de poids faible
     }
 
-    mess_bi = dechiffrement(mess_bi, key_bi);
+    mess_bi = dechiffrement(mess_bi, key_bi);   
     empty(mess);
     bi_to_hex(mess_bi, mess);
 
