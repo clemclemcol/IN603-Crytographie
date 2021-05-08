@@ -49,6 +49,3 @@ main_att.o: main_att.c attaque.h common.h
 
 clean :
 	rm *.o 
-
-zip : 
-	zip DM_COLNOT.zip -r *.c *.h *.docx Makefile README.md
