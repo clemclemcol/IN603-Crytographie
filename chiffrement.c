@@ -4,7 +4,7 @@ char c_sub_tab[] = "c56b90ad3ef84712";
 
 int c_per_tab[24] = {0, 6, 12, 18, 1, 7, 13, 19, 2, 8, 14, 20, 3, 9, 15, 21, 4, 10, 16, 22, 5, 11, 17, 23};
 
-int c_get_ki(char *key_bi, char *ki)
+int c_get_ki(char *key_bi, char *ki)                //récupération de la sous clé ki
 {
     int i = 40;
     char * tmp = malloc(sizeof(char));
@@ -18,14 +18,14 @@ int c_get_ki(char *key_bi, char *ki)
     return 0;
 }
 
-char * c_key_substitution(char *state, int nb){
+char * c_key_substitution(char *state, int nb){     //fonction de substitution des 4 premiers bits de la clé (boite_S)
     char *sub_hex = malloc(80 * sizeof(char));
     if (strlen(sub_hex)!=0){
         strcpy(sub_hex, "");
     }
     int i = 0;
     bi_to_hex(state, sub_hex);
-    printf("key sub %s\n",state);
+    //printf("key sub %s\n",state);
 
     int value;
     for (int i = 0; i < 1; i++)
@@ -98,7 +98,7 @@ char * c_key_substitution(char *state, int nb){
     return state;
 }
 
-char* c_mess_substitution(char *state, int nb)
+char* c_mess_substitution(char *state, int nb)      //fonction de substitution (boite-S pour le message)
 {
     char *sub_hex = malloc(80 * sizeof(char));
     if (strlen(sub_hex)!=0){
@@ -194,7 +194,8 @@ char* c_mess_substitution(char *state, int nb)
     return state;
 }
 
-char * c_permutation(char *state){
+char * c_permutation(char *state)                   //fonction de permuation du message
+{
     char * tmp = malloc (24*sizeof(char));
     if (tmp == NULL){
         fprintf(stderr, "Error malloc.\n");
@@ -215,12 +216,10 @@ char * c_permutation(char *state){
     return state;
 }
 
-void c_key_schedule(char *key_bi, int I)
+void c_key_schedule(char *key_bi, int I)            //candencement de clé
 { 
-    //printf("kb: %s\n", key_bi);
-    
     key_bi = pivot(key_bi); 
-    //printf("kb piv: %s\n", key_bi);
+
     key_bi = c_key_substitution(key_bi, 4); 
     
     key_bi = key_xor(key_bi, I); 
@@ -231,9 +230,9 @@ char *chiffrement(char *state_bi, char *key_bi)
 {
     int i ;
     for (i = 1; i < 11; i ++){
-        char *ki = malloc(24* sizeof(char)); 
-        char * keyhex = malloc(24* sizeof(char));
-        char * messhex = malloc(24* sizeof(char));
+        char *ki = malloc(25* sizeof(char)); 
+        char * keyhex = malloc(25* sizeof(char));
+        char * messhex = malloc(25* sizeof(char));
 
         if (ki == NULL){
             fprintf(stderr, "ERR malloc.\n");
@@ -243,25 +242,24 @@ char *chiffrement(char *state_bi, char *key_bi)
             strcpy(ki,"");
         }
 
-        c_get_ki(key_bi, ki);
+        c_get_ki(key_bi, ki);               //récupération de la sous-clé
 
-        bi_to_hex(ki, keyhex);
+        bi_to_hex(ki, keyhex);              //conversion binaire en hexadécimal
         bi_to_hex(state_bi, messhex);
-        //fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s \n",i, messhex, i, keyhex);
-        c_key_schedule(key_bi, i); 
+        c_key_schedule(key_bi, i);          //cadencement de clé
        
-        state_bi = mess_xor(state_bi, ki);
+        state_bi = mess_xor(state_bi, ki);      //XOR entre la sous clé et le message
 
-        state_bi = c_mess_substitution(state_bi, strlen(state_bi));
+        state_bi = c_mess_substitution(state_bi, strlen(state_bi));         //fonction de substitution sur le message
 
-        state_bi = c_permutation(state_bi);
+        state_bi = c_permutation(state_bi);        //fonction de permutation sur le message 
 
         free(ki);
 
     }
-    char *ki = malloc(24 * sizeof(char)); 
-    char * messhexf = malloc(24*sizeof(char));
-    char * kihexf = malloc(24*sizeof(char));
+    char *ki = malloc(25* sizeof(char)); 
+    char * messhexf = malloc(25 *sizeof(char));
+    char * kihexf = malloc(25*sizeof(char));
     if (ki == NULL){
         fprintf(stderr, "ERR malloc.\n");
         exit(2);
@@ -269,11 +267,10 @@ char *chiffrement(char *state_bi, char *key_bi)
     if (strlen(ki)!=0){
         strcpy(ki,"");
     }
-    c_get_ki(key_bi, ki);
-    state_bi = mess_xor(state_bi, ki);
-    bi_to_hex(state_bi, messhexf);
+    c_get_ki(key_bi, ki);                           //récupération de la sous clé 11
+    state_bi = mess_xor(state_bi, ki);              //XOR du message avec le sous-clé 11
+    bi_to_hex(state_bi, messhexf);                  //transformation binaire en hexadécimal
     bi_to_hex(ki, kihexf);
-    //fprintf(stdout, "[ TOUR %d ] state : %s --> ki %d: %s \n",i, messhexf, i, kihexf);
 
     free(ki);
     free(messhexf);
