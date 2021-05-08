@@ -1,6 +1,6 @@
 #include "common.h"
 
-int padding(char *key_bi)
+int padding(char *key_bi)               //ajout des bits de poids faible
 {
     while (strlen(key_bi) < 80)
     {
@@ -9,7 +9,7 @@ int padding(char *key_bi)
     return 0;
 }
 
-int empty(char *state)
+int empty(char *state)                  //vide une chaine de caractère
 {
     for (int i = 0; i < strlen(state); i++)
     {
@@ -18,7 +18,7 @@ int empty(char *state)
     return 0;
 }
 
-int dec_to_bi(int num, int *num_bi)
+int dec_to_bi(int num, int *num_bi)     //conversion décimale en binaire
 {
     int i = 0;
     int j = 0;
@@ -47,7 +47,7 @@ int dec_to_bi(int num, int *num_bi)
     return 0;
 }
 
-int hex_to_bi(char *key, char *key_bi)
+int hex_to_bi(char *key, char *key_bi)  //conversion hexadécimal en binaire
 {
     char dix[3] = "10";
     char ze[2] = "\0";
@@ -139,7 +139,7 @@ int hex_to_bi(char *key, char *key_bi)
     return 0;
 }
 
-int bi_to_hex(char *bi, char *hex)
+int bi_to_hex(char *bi, char *hex)      //conversion binaire en hexadécimal
 {
     for (int i = 0; i < strlen(bi); i = i + 4)
     {
@@ -227,7 +227,7 @@ int bi_to_hex(char *bi, char *hex)
     return 0;
 }
 
-char *pivot(char *key_bi)
+char *pivot(char *key_bi)               //fonction de pivot des bits de la clé maître
 {
     char *tab_piv = malloc(80 * sizeof(char));
     for (int i = 79; i >= 0; --i)
@@ -251,7 +251,7 @@ char *pivot(char *key_bi)
     return key_bi;
 }
 
-char *key_xor(char *key_bi, int I)
+char *key_xor(char *key_bi, int I)      //xor des 5 bits de la clé maître
 {
     //fprintf(stdout, "key : %s --> tour : %d\n", key_bi, I);
     char *to_xor = malloc(sizeof(char) * 5);
@@ -282,14 +282,14 @@ char *key_xor(char *key_bi, int I)
     return key_bi;
 }
 
-char *mess_xor(char *state, char *ki)
+char *mess_xor(char *state, char *ki)   //xor de la sous clé avec le message
 {
     printf("mess : %s --> %ld // key : %s --> %ld\n", state, strlen(state), ki, strlen(ki));
 
     if (strlen(ki) > 24)
     {
         strcpy(&ki[23], "\0");
-        printf("la\n");
+        //printf("la\n");
         //strlen(ki) = strlen(ki)-1;
     }
 
@@ -299,12 +299,12 @@ char *mess_xor(char *state, char *ki)
         exit(1);
     }
 
-    int *stateI = malloc(24 * sizeof(int));
-    int *kiI = malloc(24 * sizeof(int));
+    int *stateI = malloc(25 * sizeof(int));
+    int *kiI = malloc(25 * sizeof(int));
     for (int i = 0; i < strlen(state); i++)
     {
-        char kTemp[24];
-        char sTemp[24];
+        char kTemp[25];
+        char sTemp[25];
         sprintf(&kTemp[i], "%c", ki[i]);
         kiI[i] = atoi(&kTemp[i]);
         sprintf(&sTemp[i], "%c", state[i]);
