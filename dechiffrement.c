@@ -6,7 +6,7 @@ char d_sub_tab_inv[] = "5ef8c12db463079a";
 
 int d_per_tab[24] = {0, 6, 12, 18, 1, 7, 13, 19, 2, 8, 14, 20, 3, 9, 15, 21, 4, 10, 16, 22, 5, 11, 17, 23};
 
-int d_get_ki(char *key_bi, char **ki, int T)
+int d_get_ki(char *key_bi, char **ki, int T)        //récupération des sous-clés et stockage dans le tableau de sous clés
 {
     char *tmp = malloc(sizeof(char));
     if (tmp == NULL)
@@ -26,7 +26,7 @@ int d_get_ki(char *key_bi, char **ki, int T)
     return 0;
 }
 
-char *d_key_substitution(char *state, int nb)
+char *d_key_substitution(char *state, int nb)       //boite S pour la clé 
 {
     char *sub_hex = malloc(80 * sizeof(char));
     int i = 0;
@@ -101,7 +101,7 @@ char *d_key_substitution(char *state, int nb)
     return state;
 }
 
-char *d_mess_substitution(char *state, int nb)
+char *d_mess_substitution(char *state, int nb)      // boite S pour le message utilisant l'inverse du tableau de substitution
 {
     char *sub_hex = malloc(80 * sizeof(char));
     char *sub_h = malloc(80 * sizeof(char));
@@ -197,7 +197,7 @@ char *d_mess_substitution(char *state, int nb)
     return state;
 }
 
-char *d_permutation(char *state)
+char *d_permutation(char *state)                    //fonction de permuation
 {
     char *tmp = malloc(24 * sizeof(char));
     if (tmp == NULL)
@@ -226,7 +226,7 @@ char *d_permutation(char *state)
     return state;
 }
 
-void d_key_schedule(char *key_bi, int I)
+void d_key_schedule(char *key_bi, int I)            //cadencement des clés
 {
     key_bi = pivot(key_bi);
 
@@ -239,16 +239,10 @@ void d_key_schedule(char *key_bi, int I)
 
 char *dechiffrement(char *state_bi, char *key_bi)
 {
-    //printf("state_bi at start dechiffrement: %s\n", state_bi);
-
-    //printf("mess before mess-xor %s\n",state_bi);
-    //fprintf(stdout, "%s %ld //%ld\n", state_bi, strlen(state_bi), strlen(key_bi));
-    //char **ki = malloc(12* sizeof(*ki+1));
-    char **ki = malloc(12* sizeof(char*) +1);
-
+    
+    char **ki = malloc(12* sizeof(char*) +1);       //creation du tableau de sous-clés
     for (int a = 0; a <= 12; a++)
     {
-        //ki[a] = malloc(24* sizeof(**ki+1));
         ki[a] = malloc(24* sizeof(char)+1);
     }
     if (ki == NULL)
@@ -257,15 +251,13 @@ char *dechiffrement(char *state_bi, char *key_bi)
         exit(2);
     }
     int i = 1;
-            //printf("state_bi at middle0 dechiffrement: %s\n", state_bi);
 
-    for (i = 1; i < 12; i++)
+    for (i = 1; i < 12; i++)                        //remplissage du tableau des sous-clés
     {
-        d_get_ki(key_bi, ki, i);
+        d_get_ki(key_bi, ki, i);                
         
         d_key_schedule(key_bi, i);
     }
-    //printf("state_bi at middle1 dechiffrement: %s\n", state_bi);
 
     char *keyhex = malloc(24 * sizeof(char));
     char *messhex = malloc(24 * sizeof(char));
@@ -275,8 +267,7 @@ char *dechiffrement(char *state_bi, char *key_bi)
         strcpy(keyhex, "");
     }
 
-    state_bi = mess_xor(state_bi, ki[11]);
-    //printf("ki 11 %s\n",ki[11]);
+    state_bi = mess_xor(state_bi, ki[11]);          //XOR du chiffré avec la dernière sous clé
     bi_to_hex(state_bi, messhex);
     bi_to_hex(ki[11], keyhex);
     fprintf(stdout, "[ TOUR 11 ] state : %s --> ki 11: %s \n", messhex, keyhex);
@@ -288,11 +279,11 @@ char *dechiffrement(char *state_bi, char *key_bi)
             strcpy(messhex, "");
             strcpy(keyhex, "");
         }
-        state_bi = d_permutation(state_bi);
+        state_bi = d_permutation(state_bi);         //permutation des bits du message
 
-        state_bi = d_mess_substitution(state_bi, strlen(state_bi));
+        state_bi = d_mess_substitution(state_bi, strlen(state_bi));     //substitution des bits du message
 
-        state_bi = mess_xor(state_bi, ki[i]);
+        state_bi = mess_xor(state_bi, ki[i]);                       //XOR du message avec les sous-clés
 
         bi_to_hex(state_bi, messhex);
         bi_to_hex(ki[i], keyhex);
